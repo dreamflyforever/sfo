@@ -1,6 +1,6 @@
 /*
-* server be sent file
-*/
+ * server be sent file
+ */
 #include<netinet/in.h>  
 #include<sys/types.h>  
 #include<sys/socket.h>  
@@ -42,8 +42,8 @@ int main(int argc, char **argv)
 		socklen_t length = sizeof(client_addr);  
 
 		int new_server_socket = accept(server_socket,
-						(struct sockaddr*)&client_addr,
-						&length);
+				(struct sockaddr*)&client_addr,
+				&length);
 
 		if (new_server_socket < 0) {
 			printf("Server Accept Failed!\n");  
@@ -61,40 +61,43 @@ int main(int argc, char **argv)
 		char file_name[FILE_NAME_MAX_SIZE + 1];  
 		bzero(file_name, sizeof(file_name));  
 		strncpy(file_name,
-			buffer,
-			strlen(buffer) > FILE_NAME_MAX_SIZE ?
-			FILE_NAME_MAX_SIZE : strlen(buffer));
+				buffer,
+				strlen(buffer) > FILE_NAME_MAX_SIZE ?
+				FILE_NAME_MAX_SIZE : strlen(buffer));
 
-		FILE *fp = fopen(file_name, "r");  
-		if (fp == NULL) {  
-			printf("File:\t%s Not Found!\n", file_name);  
-		} else {  
-			bzero(buffer, BUFFER_SIZE);  
-			int file_block_length = 0;  
-			while ((file_block_length = fread(buffer,
-						sizeof(char),
-						BUFFER_SIZE,
-						fp)) > 0) {  
-				printf("file_block_length = %d\n", file_block_length);  
+		FILE *fp = fopen(file_name, "w");
+		if (fp == NULL) {
+			printf("File:\t%s Can Not Open To Write!\n", file_name);
+			exit(1);
+		}
 
-				if (send(new_server_socket,
+		bzero(buffer, sizeof(buffer));
+		length = 0;
+		while (length = recv(new_server_socket,
 					buffer,
-					file_block_length,
-					0) < 0) {  
-					printf("Send File:\t%s Failed!\n", file_name);  
-					break;  
-				}  
-
-				bzero(buffer, sizeof(buffer));  
+					BUFFER_SIZE,
+					0)) {
+			if (length < 0) {
+				printf("Recieve Data From Client Failed!\n");
+				break;
 			}
-			fclose(fp);  
-			printf("File:\t%s Transfer Finished!\n", file_name);  
-		}  
+
+			int write_length = fwrite(buffer,
+						sizeof(char),
+						length,
+						fp);
+
+			if (write_length < length) {
+				printf("File:\t%s Write Failed!\n", file_name);
+				break;
+			}
+			bzero(buffer, BUFFER_SIZE);
+		}
 
 		close(new_server_socket);  
+		fclose(fp);  
 	}  
-
 	close(server_socket);  
 
 	return 0;
-} 
+}

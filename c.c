@@ -1,7 +1,7 @@
 /*
  * client send file name and receive file from server.
  *
-*/
+ */
 
 #include<netinet/in.h>
 #include<sys/types.h>
@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 	int client_socket;
 	struct sockaddr_in  server_addr;
 	if (argc != 2) {
-		printf("Usage: ./%s ServerIPAddress\n", argv[0]);
+		printf("Usage: %s ServerIPAddress\n", argv[0]);
 		exit(1);
 	}
 
@@ -36,8 +36,8 @@ int main(int argc, char **argv)
 	}
 
 	if (bind(client_socket,
-		(struct sockaddr*)&client_addr,
-		sizeof(client_addr))) {
+				(struct sockaddr*)&client_addr,
+				sizeof(client_addr))) {
 		printf("Client Bind Port Failed!\n");
 		exit(1);
 	}
@@ -54,8 +54,8 @@ int main(int argc, char **argv)
 	socklen_t server_addr_length = sizeof(server_addr);
 
 	if (connect(client_socket,
-		(struct sockaddr*)&server_addr,
-		server_addr_length) < 0) {
+				(struct sockaddr*)&server_addr,
+				server_addr_length) < 0) {
 		printf("Can Not Connect To %s!\n", argv[1]);
 		exit(1);
 	}
@@ -68,37 +68,40 @@ int main(int argc, char **argv)
 	char buffer[BUFFER_SIZE];
 	bzero(buffer, sizeof(buffer));
 	strncpy(buffer,
-		file_name,
-		strlen(file_name) > BUFFER_SIZE ?
-		BUFFER_SIZE : strlen(file_name));
+			file_name,
+			strlen(file_name) > BUFFER_SIZE ?
+			BUFFER_SIZE : strlen(file_name));
 	send(client_socket, buffer, BUFFER_SIZE, 0);
 
-	FILE *fp = fopen(file_name, "w");
-	if (fp == NULL) {
-		printf("File:\t%s Can Not Open To Write!\n", file_name);
-		exit(1);
-	}
+	FILE *fp = fopen(file_name, "r");  
+	if (fp == NULL) {  
+		printf("File:\t%s Not Found!\n", file_name);  
+	} else {  
+		bzero(buffer, BUFFER_SIZE);  
+		int file_block_length = 0;  
+		while ((file_block_length = fread(buffer,
+						sizeof(char),
+						BUFFER_SIZE,
+						fp)) > 0) {  
+			printf("file_block_length = %d\n", file_block_length);  
 
-	bzero(buffer, sizeof(buffer));
-	int length = 0;
-	while(length = recv(client_socket, buffer, BUFFER_SIZE, 0)) {
-		if (length < 0) {
-			printf("Recieve Data From Server %s Failed!\n", argv[1]);
-			break;
+			if (send(client_socket,
+						buffer,
+						file_block_length,
+						0) < 0) {  
+				printf("Send File:\t%s Failed!\n", file_name);  
+				break;  
+			}  
+
+			bzero(buffer, sizeof(buffer));  
 		}
+		fclose(fp);  
+		printf("File:\t%s Transfer Finished!\n", file_name);  
+	}  
 
-		int write_length = fwrite(buffer, sizeof(char), length, fp);
-		if (write_length < length) {
-			printf("File:\t%s Write Failed!\n", file_name);
-			break;
-		}
-		bzero(buffer, BUFFER_SIZE);
-	}
 
-	printf("Recieve File:\t %s From Server[%s] Finished!\n", file_name, argv[1]);
+	printf("send File:\t %s to Server[%s] Finished!\n", file_name, argv[1]);
 
-	fclose(fp);
 	close(client_socket);
 	return 0;
-
 }
