@@ -7,6 +7,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include <unistd.h>
 
 #define HELLO_WORLD_SERVER_PORT 6666
 #define LENGTH_OF_LISTEN_QUEUE 20
@@ -95,6 +96,7 @@ int main(int argc, char **argv)
 		}
 
 		close(new_server_socket);
+		printf("receive File: %s from client Finished!\n", file_name);
 		fclose(fp);
 	}
 	close(server_socket);

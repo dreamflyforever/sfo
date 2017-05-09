@@ -9,10 +9,22 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 
 #define HELLO_WORLD_SERVER_PORT 6666
 #define BUFFER_SIZE 1024
 #define FILE_NAME_MAX_SIZE 512
+
+#if 1
+#define pf(format, ...) \
+	{printf("[%s : %s : %d] ", \
+	__FILE__, __func__, __LINE__); \
+	printf(format, ##__VA_ARGS__);}
+#else
+#define pf(format, ...) 
+#endif
 
 int main(int argc, char **argv)
 {
@@ -62,7 +74,7 @@ int main(int argc, char **argv)
 
 	char file_name[FILE_NAME_MAX_SIZE + 1];
 	bzero(file_name, sizeof(file_name));
-	printf("Please Input File Name On Server.\t");
+	printf("Please Input File Name On Server:");
 	scanf("%s", file_name);
 
 	char buffer[BUFFER_SIZE];
@@ -72,18 +84,7 @@ int main(int argc, char **argv)
 		strlen(file_name) > BUFFER_SIZE ?
 		BUFFER_SIZE : strlen(file_name));
 	printf("buffer: %s\n", buffer);
-	/*XXX*/
-	int i, j;
-	for (i = 0; i < strlen(file_name); i++) {
-		printf("i: %d\n", i);
-		if (buffer[i] == '/') {
-			j = i;
-			printf("hello world: %d\n", i);
-		}
-	}
-	printf("j:%d, file-name: %s\n", j, &buffer[j+1]);
 
-	printf("send buffer: %s\n", buffer);
 	send(client_socket, buffer, BUFFER_SIZE, 0);
 
 	FILE *fp = fopen(file_name, "r");
@@ -112,7 +113,7 @@ int main(int argc, char **argv)
 		printf("File:\t%s Transfer Finished!\n", file_name);
 	}
 
-	printf("send File:\t %s to Server[%s] Finished!\n", file_name, argv[1]);
+	printf("send File: %s to Server[%s] Finished!\n", file_name, argv[1]);
 
 	close(client_socket);
 	return 0;
