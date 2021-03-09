@@ -13,7 +13,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#define HELLO_WORLD_SERVER_PORT 6666
+#define SERVER_PORT 6666
 #define BUFFER_SIZE 1024
 #define FILE_NAME_MAX_SIZE 512
 
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	server_addr.sin_port = htons(HELLO_WORLD_SERVER_PORT);
+	server_addr.sin_port = htons(SERVER_PORT);
 	socklen_t server_addr_length = sizeof(server_addr);
 
 	if (connect(client_socket,

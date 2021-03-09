@@ -9,7 +9,7 @@
 #include<string.h>
 #include <unistd.h>
 
-#define HELLO_WORLD_SERVER_PORT 6666
+#define SERVER_PORT 6666
 #define LENGTH_OF_LISTEN_QUEUE 20
 #define BUFFER_SIZE 1024
 #define FILE_NAME_MAX_SIZE 512
@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 	bzero(&server_addr, sizeof(server_addr));
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_addr.s_addr = htons(INADDR_ANY);
-	server_addr.sin_port = htons(HELLO_WORLD_SERVER_PORT);
+	server_addr.sin_port = htons(SERVER_PORT);
 
 	int server_socket = socket(PF_INET, SOCK_STREAM, 0);
 	if (server_socket < 0) {
@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 	}
 
 	if (bind(server_socket, (struct sockaddr*)&server_addr, sizeof(server_addr))) {
-		printf("Server Bind Port: %d Failed!\n", HELLO_WORLD_SERVER_PORT);
+		printf("Server Bind Port: %d Failed!\n", SERVER_PORT);
 		exit(1);
 	}
 
